@@ -118,7 +118,7 @@ bool UnsignedTransactionImpl::checkLoadedTx(const std::function<size_t()> get_nu
       if (find_tx_extra_field_by_type(tx_extra_fields, extra_nonce))
       {
         crypto::hash payment_id;
-        if(cryptonote::get_encrypted_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id8))
+        if(cryptonote::get_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id8))
         {
           if (!payment_id_string.empty())
             payment_id_string += ", ";
@@ -129,7 +129,7 @@ bool UnsignedTransactionImpl::checkLoadedTx(const std::function<size_t()> get_nu
         {
           if (!payment_id_string.empty())
             payment_id_string += ", ";
-          payment_id_string = std::string("unencrypted payment ID ") + epee::string_tools::pod_to_hex(payment_id);
+          payment_id_string = std::string("encrypted payment ID ") + epee::string_tools::pod_to_hex(payment_id);
         }
       }
     }
@@ -270,7 +270,7 @@ std::vector<std::string> UnsignedTransactionImpl::paymentId() const
         if (cryptonote::find_tx_extra_field_by_type(tx_extra_fields, extra_nonce))
         {
           crypto::hash8 payment_id8 = crypto::null_hash8;
-          if(cryptonote::get_encrypted_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id8))
+          if(cryptonote::get_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id8))
           {
               // We can't decrypt short pid without recipient key.
               memcpy(payment_id.data, payment_id8.data, 8);

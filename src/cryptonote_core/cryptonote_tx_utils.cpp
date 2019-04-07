@@ -226,10 +226,10 @@ namespace cryptonote
       tx_extra_nonce extra_nonce;
       if (find_tx_extra_field_by_type(tx_extra_fields, extra_nonce))
       {
-        crypto::hash8 payment_id = null_hash8;
-        if (get_encrypted_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id))
+        crypto::hash8 payment_id8 = null_hash8;
+        if (get_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id8))
         {
-          LOG_PRINT_L2("Encrypting payment id " << payment_id);
+          LOG_PRINT_L2("Encrypting payment id " << payment_id8);
           crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
           if (view_key_pub == null_pkey)
           {
@@ -237,21 +237,54 @@ namespace cryptonote
             return false;
           }
 
-          if (!hwdev.encrypt_payment_id(payment_id, view_key_pub, tx_key))
+          if (!hwdev.encrypt_payment_id(payment_id8, view_key_pub, tx_key))
           {
             LOG_ERROR("Failed to encrypt payment id");
             return false;
           }
 
           std::string extra_nonce;
-          set_encrypted_payment_id_to_tx_extra_nonce(extra_nonce, payment_id);
+          set_payment_id_to_tx_extra_nonce(extra_nonce, payment_id8);
           remove_field_from_tx_extra(tx.extra, typeid(tx_extra_nonce));
           if (!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce))
           {
             LOG_ERROR("Failed to add encrypted payment id to tx extra");
             return false;
           }
-          LOG_PRINT_L1("Encrypted payment ID: " << payment_id);
+          LOG_PRINT_L1("Encrypted payment ID: " << payment_id8);
+        } else  {
+          crypto::hash payment_id = null_hash;
+          if (get_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id))
+          {
+            LOG_PRINT_L2("Encrypting payment id " << payment_id);
+            crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
+            if (view_key_pub == null_pkey)
+            {
+              LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
+              return false;
+            }
+
+            if (!hwdev.encrypt_payment_id(payment_id, view_key_pub, tx_key))
+            {
+              LOG_ERROR("Failed to encrypt payment id");
+              return false;
+            }
+
+            std::string extra_nonce;
+            set_payment_id_to_tx_extra_nonce(extra_nonce, payment_id);
+            remove_field_from_tx_extra(tx.extra, typeid(tx_extra_nonce));
+            if (!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce))
+            {
+              LOG_ERROR("Failed to add encrypted payment id to tx extra");
+              return false;
+            }
+            LOG_PRINT_L1("Encrypted payment ID: " << payment_id);
+          }
+          else
+          {
+            LOG_ERROR("Unknown type of payment ID");
+            return false;
+          }
         }
       }
     }

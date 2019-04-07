@@ -658,7 +658,7 @@ namespace tools
           return false;
         }
         integrated_payment_id = info.payment_id;
-        cryptonote::set_encrypted_payment_id_to_tx_extra_nonce(extra_nonce, integrated_payment_id);
+        cryptonote::set_payment_id_to_tx_extra_nonce(extra_nonce, integrated_payment_id);
 
         /* Append Payment ID data into extra */
         if (!cryptonote::add_extra_nonce_to_tx_extra(extra, extra_nonce)) {
@@ -691,7 +691,7 @@ namespace tools
       }
       /* or short payment ID */
       else if (wallet2::parse_short_payment_id(payment_id_str, short_payment_id)) {
-        cryptonote::set_encrypted_payment_id_to_tx_extra_nonce(extra_nonce, short_payment_id);
+        cryptonote::set_payment_id_to_tx_extra_nonce(extra_nonce, short_payment_id);
       }
       else {
         er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
